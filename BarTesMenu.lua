@@ -1,113 +1,250 @@
---========================================================--
---            Tes | Baleg Moal - Hacker UI                --
---                    Developer: Bara Setiawan            --
---========================================================--
+-- DraggableMenu.local.lua
+-- LocalScript: membuat UI 'BaraLeaks' style, draggable, minimize, toggle rows.
+-- GANTI owner avatar id di bawah dengan decal asset id yang lo upload di Roblox (angka tanpa "rbxassetid://")
+-- Gambar model link tanpa id
+local OWNER_AVATAR_URL = "https://imgur.com/a/UZFeGzt"
+local MAIN_PIC_URL = "https://imgur.com/a/UZFeGzt"
+local USE_MAIN_PIC = false
 
-local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
-ScreenGui.Name = "BalegMoal_UI"
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
--- Main Frame
-local Main = Instance.new("Frame", ScreenGui)
-Main.Size = UDim2.new(0, 320, 0, 380)
-Main.Position = UDim2.new(0, 20, 0.1, 0)
-Main.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-Main.BorderSizePixel = 0
+-- Utility: create instance
+local function new(class, props)
+    local obj = Instance.new(class)
+    if props then
+        for k,v in pairs(props) do
+            if k == "Parent" then
+                obj.Parent = v
+            else
+                obj[k] = v
+            end
+        end
+    end
+    return obj
+end
 
-local UICorner = Instance.new("UICorner", Main)
-UICorner.CornerRadius = UDim.new(0, 8)
+-- Root ScreenGui
+local screenGui = new("ScreenGui", {Parent = PlayerGui, Name = "BaraLeaksUI", ResetOnSpawn = false})
+screenGui.DisplayOrder = 999
 
--- Title
-local Title = Instance.new("TextLabel", Main)
-Title.Size = UDim2.new(1, 0, 0, 40)
-Title.Text = "Tes Script | Baleg Moal"
-Title.TextColor3 = Color3.fromRGB(50, 255, 60)
-Title.BackgroundTransparency = 1
-Title.Font = Enum.Font.Code
-Title.TextSize = 22
+-- Main container (frame that looks like window)
+local window = new("Frame", {
+    Parent = screenGui,
+    Name = "Window",
+    AnchorPoint = Vector2.new(0.5,0.5),
+    Position = UDim2.new(0.5, 0.5, 0.5, 0), -- center-ish
+    Size = UDim2.new(0, 820, 0, 380),
+    BackgroundColor3 = Color3.fromRGB(45,45,45),
+    BorderSizePixel = 0,
+    BackgroundTransparency = 0,
+    ClipsDescendants = false,
+})
+window.AnchorPoint = Vector2.new(0.5, 0.5)
 
--- Developer INFO button
-local DevBtn = Instance.new("TextButton", Main)
-DevBtn.Size = UDim2.new(0, 40, 0, 30)
-DevBtn.Position = UDim2.new(1, -45, 0, 5)
-DevBtn.Text = "©"
-DevBtn.BackgroundColor3 = Color3.fromRGB(0, 255, 70)
-DevBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
-DevBtn.Font = Enum.Font.Code
-DevBtn.TextSize = 20
+-- Rounded look
+local corner = new("UICorner", {Parent = window, CornerRadius = UDim.new(0, 16)})
 
-local DevCorner = Instance.new("UICorner", DevBtn)
-DevCorner.CornerRadius = UDim.new(0, 6)
+-- Top bar
+local topBar = new("Frame", {
+    Parent = window, Name = "Top", Size = UDim2.new(1,0,0,64), Position = UDim2.new(0,0,0,0),
+    BackgroundColor3 = Color3.fromRGB(36,36,36), BorderSizePixel = 0
+})
+new("UICorner",{Parent = topBar, CornerRadius = UDim.new(0,16)})
 
--- Developer Page
-local DevPage = Instance.new("Frame", Main)
-DevPage.Size = UDim2.new(1, -20, 0, 70)
-DevPage.Position = UDim2.new(0, 10, 0, -80) -- hidden
-DevPage.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-DevPage.BorderSizePixel = 0
-DevPage.Visible = false
-Instance.new("UICorner", DevPage)
+local title = new("TextLabel", {
+    Parent = topBar, Name = "Title", Text = "BaraLeaks | Owner Tampan",
+    Position = UDim2.new(0, 72, 0, 10), Size = UDim2.new(0.7,0,1, -10),
+    BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(245,245,245),
+    Font = Enum.Font.GothamBlack, TextSize = 30, TextXAlignment = Enum.TextXAlignment.Left
+})
 
-local Dev1 = Instance.new("TextLabel", DevPage)
-Dev1.Text = "Developer : Bara Setiawan"
-Dev1.TextColor3 = Color3.fromRGB(255, 40, 40)
-Dev1.Position = UDim2.new(0, 10, 0, 5)
-Dev1.Size = UDim2.new(1, -20, 0, 25)
-Dev1.BackgroundTransparency = 1
-Dev1.Font = Enum.Font.Code
-Dev1.TextSize = 16
+-- avatar small on top-left
+local avatarWrap = new("Frame", {Parent = topBar, Name="AvatarWrap", Size = UDim2.new(0,64,0,64), Position = UDim2.new(0,8,0,0), BackgroundTransparency = 1})
+local avatar = new("ImageLabel", {
+    Parent = avatarWrap, Name = "Avatar", Size = UDim2.new(1,0,1,0),
+    BackgroundColor3 = Color3.fromRGB(65,65,65), BorderSizePixel = 0, Image = "rbxassetid://"..OWNER_AVATAR_ID,
+    ScaleType = Enum.ScaleType.Crop
+})
+new("UICorner",{Parent = avatar, CornerRadius = UDim.new(0,10)})
 
-local Dev2 = Instance.new("TextLabel", DevPage)
-Dev2.Text = "TEAM : Barlens Studio"
-Dev2.TextColor3 = Color3.fromRGB(40, 255, 50)
-Dev2.Position = UDim2.new(0, 10, 0, 35)
-Dev2.Size = UDim2.new(1, -20, 0, 25)
-Dev2.BackgroundTransparency = 1
-Dev2.Font = Enum.Font.Code
-Dev2.TextSize = 16
+-- minimize and close buttons (top-right)
+local closeBtn = new("TextButton", {Parent = topBar, Name = "Close", Text = "X", Size = UDim2.new(0,48,0,40), Position = UDim2.new(1,-60,0,10), BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(255,255,255), Font = Enum.Font.GothamBold, TextSize = 24})
+local minBtn = new("TextButton", {Parent = topBar, Name = "Min", Text = "—", Size = UDim2.new(0,48,0,40), Position = UDim2.new(1,-110,0,10), BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(255,255,255), Font = Enum.Font.GothamBold, TextSize = 24})
 
--- Toggle Developer Info
-local DevOpen = false
-DevBtn.MouseButton1Click:Connect(function()
-	DevOpen = not DevOpen
+-- Body area (grid-like)
+local body = new("Frame", {Parent = window, Name="Body", Position = UDim2.new(0,0,0,64), Size = UDim2.new(1,0,1,-64), BackgroundTransparency = 1})
 
-	if DevOpen then
-		DevPage.Visible = true
-		DevPage:TweenPosition(UDim2.new(0, 10, 0, 45), "Out", "Quad", .3)
-	else
-		DevPage:TweenPosition(UDim2.new(0, 10, 0, -80), "Out", "Quad", .3)
-		wait(.3)
-		DevPage.Visible = false
-	end
+-- left column labels
+local leftCol = new("Frame",{Parent = body, Name="LeftCol", Position = UDim2.new(0,0,0,0), Size = UDim2.new(0,0,0,1,0)})
+-- we'll create rows dynamically
+local ROW_COUNT = 6
+local rowHeight = 1/ROW_COUNT
+
+local rows = {}
+
+for i=1,ROW_COUNT do
+    local r = new("Frame", {
+        Parent = body, Name = "Row"..i,
+        Position = UDim2.new(0, 0, (i-1)/ROW_COUNT, 0),
+        Size = UDim2.new(0.35, 0, 1/ROW_COUNT, 0),
+        BackgroundColor3 = Color3.fromRGB(50,50,50),
+        BorderSizePixel = 0
+    })
+    new("UICorner",{Parent = r, CornerRadius = UDim.new(0,0)})
+    local labelText = (i==1) and "Feature" or (i==2 and "Info Owner" or "Coming Soon")
+    local t = new("TextLabel", {
+        Parent = r, Name = "Label", Text = labelText,
+        Size = UDim2.new(1, -12, 1, 0), Position = UDim2.new(0,12,0,0),
+        BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(245,245,245),
+        Font = Enum.Font.Gotham, TextSize = 28, TextXAlignment = Enum.TextXAlignment.Left
+    })
+    -- separator lines
+    local sep = new("Frame",{Parent = body, BackgroundColor3 = Color3.new(1,1,1), BackgroundTransparency = 0.85, Size = UDim2.new(1,0,0,1), Position = UDim2.new(0,0,(i-1)/ROW_COUNT, 0)})
+    rows[i] = r
+end
+
+-- right content column
+local content = new("Frame", {Parent = body, Name = "Content", Position = UDim2.new(0.35,0,0,0), Size = UDim2.new(0.65,0,1,0), BackgroundTransparency = 1})
+
+-- header top of content
+local contentHeader = new("TextLabel", {Parent = content, Text = "List Feature Yang Akan Segera Datang", Size = UDim2.new(1,0,0,64), Position = UDim2.new(0,0,0,0), BackgroundTransparency = 1, Font = Enum.Font.FreightSans, TextSize = 28, TextColor3 = Color3.fromRGB(240,240,240), TextXAlignment = Enum.TextXAlignment.Center})
+-- create cells corresponding to rows
+local contentCells = {}
+for i=1,ROW_COUNT do
+    local y = (i-1)/ROW_COUNT
+    local cell = new("Frame", {Parent = content, Name = "Cell"..i, Position = UDim2.new(0,0,y,64), Size = UDim2.new(1,0,1/ROW_COUNT, -64), BackgroundColor3 = Color3.fromRGB(70,70,70)})
+    new("UICorner",{Parent=cell, CornerRadius = UDim.new(0,0)})
+    local txt = new("TextLabel", {Parent = cell, Name = "Text", Size = UDim2.new(0.85,-20,1,0), Position = UDim2.new(0.05,0,0,0), BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(250,250,250), Font = Enum.Font.GothamSemibold, TextSize = 22, TextXAlignment = Enum.TextXAlignment.Center})
+    if i == 2 then
+        txt.Text = "Owner"
+        txt.Font = Enum.Font.GothamBold
+        txt.TextSize = 24
+    else
+        txt.Text = "Segera Hadir"
+        txt.Font = Enum.Font.Gotham
+        txt.TextSize = 22
+    end
+
+    -- small arrow indicator to right
+    local arrow = new("TextLabel", {Parent = cell, Text = "V", Size = UDim2.new(0,32,0,32), Position = UDim2.new(1,-36,0.5,-16), BackgroundTransparency = 1, Font = Enum.Font.GothamBold, TextSize = 24, TextColor3 = Color3.fromRGB(245,245,245)})
+    contentCells[i] = {frame = cell, text = txt, arrow = arrow}
+end
+
+-- popup for detailed owner info (hidden)
+local popup = new("Frame", {Parent = window, Name = "Popup", Size = UDim2.new(0,0,0,0), Position = UDim2.new(0.5,0,0.5,0), BackgroundColor3 = Color3.fromRGB(80,80,80), Visible = false})
+new("UICorner",{Parent=popup, CornerRadius = UDim.new(0,6)})
+local popupImg = new("ImageLabel", {Parent = popup, Size = UDim2.new(0,0,0,0), Position = UDim2.new(0.05,0,0.1,0), Image = "rbxassetid://"..OWNER_AVATAR_ID, BackgroundTransparency = 1, ScaleType = Enum.ScaleType.Crop})
+local popupTitle = new("TextLabel", {Parent = popup, Text = "Logo Bara Leaks Script\nFist it", Font = Enum.Font.FreightSans, TextSize = 24, TextColor3 = Color3.new(1,1,1), BackgroundTransparency = 1, Position = UDim2.new(0.3,0,0.1,0), Size = UDim2.new(0.65,0,0.2,0)})
+local popupDev = new("TextLabel", {Parent = popup, Text = "Developer : Bara Tamvan", Font = Enum.Font.GothamBold, TextSize = 20, TextColor3 = Color3.fromRGB(255,102,255), BackgroundTransparency = 1, Position = UDim2.new(0.05,0,0.4,0), Size = UDim2.new(0.9,0,0.12,0)})
+local popupTeam = new("TextLabel", {Parent = popup, Text = "Team : BarLens Studio", Font = Enum.Font.GothamBold, TextSize = 20, TextColor3 = Color3.fromRGB(50,255,100), BackgroundTransparency = 1, Position = UDim2.new(0.05,0,0.55,0), Size = UDim2.new(0.9,0,0.12,0)})
+
+-- dragging implementation
+local dragging = false
+local dragStart = nil
+local startPos = nil
+
+topBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = window.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
 end)
 
--- Menu List
-local MenuList = {
-	"Main",
-	"Shop",
-	"Teleport",
-	"Config",
-	"Settings"
-}
+topBar.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        -- do nothing here; movement handled in MoveListener
+    end
+end)
 
-local Y = 100
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        -- convert delta (pixels) to scale relative to screen size
+        local screen = workspace.CurrentCamera.ViewportSize
+        local newX = startPos.X.Offset + delta.X
+        local newY = startPos.Y.Offset + delta.Y
+        window.Position = UDim2.new(0, newX, 0, newY)
+    end
+end)
 
-for _, name in ipairs(MenuList) do
-	local B = Instance.new("TextButton", Main)
-	B.Size = UDim2.new(1, -20, 0, 35)
-	B.Position = UDim2.new(0, 10, 0, Y)
-	B.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-	B.TextColor3 = Color3.fromRGB(0, 255, 120)
-	B.Text = name
-	B.Font = Enum.Font.Code
-	B.TextSize = 20
-	Instance.new("UICorner", B)
+-- minimize/close behaviors
+local isMin = false
+local originalSize = window.Size
+minBtn.MouseButton1Click:Connect(function()
+    if not isMin then
+        -- minimize to thin bar
+        TweenService:Create(window, TweenInfo.new(0.25), {Size = UDim2.new(0, 300, 0, 64)}):Play()
+        isMin = true
+    else
+        TweenService:Create(window, TweenInfo.new(0.25), {Size = originalSize}):Play()
+        isMin = false
+    end
+end)
+closeBtn.MouseButton1Click:Connect(function()
+    window:Destroy()
+    screenGui:Destroy()
+end)
 
-	B.MouseButton1Click:Connect(function()
-		game.StarterGui:SetCore("SendNotification",{
-			Title = name,
-			Text = name.." — Coming Soon"
-		})
-	end)
+-- toggle for Info Owner row (row 2)
+local infoOpen = false
+local infoIndex = 2
+contentCells[infoIndex].frame.Active = true
+contentCells[infoIndex].frame.InputBegan:Connect(function(inp)
+    if inp.UserInputType == Enum.UserInputType.MouseButton1 then
+        infoOpen = not infoOpen
+        if infoOpen then
+            -- expand popup area (show popup)
+            popup.Visible = true
+            popup.Size = UDim2.new(0, 420, 0, 240)
+            popup.Position = UDim2.new(0.5, -210, 0.5, -120)
+            popupImg.Size = UDim2.new(0,80,0,80)
+            popupImg.Image = "rbxassetid://"..OWNER_AVATAR_ID
+        else
+            popup.Visible = false
+            popup.Size = UDim2.new(0,0,0,0)
+        end
+    end
+end)
 
-	Y = Y + 42
+-- For other Coming Soon rows: clicking toggles a large grey panel with "Segera Hadir"
+for i=1,ROW_COUNT do
+    if i ~= infoIndex then
+        local cell = contentCells[i].frame
+        cell.Active = true
+        cell.InputBegan:Connect(function(inp)
+            if inp.UserInputType == Enum.UserInputType.MouseButton1 then
+                -- create temporary big panel inside content to show message
+                local big = new("Frame", {Parent = content, Size = UDim2.new(0.9,0,0.6,0), Position = UDim2.new(0.05,0,0.2,0), BackgroundColor3 = Color3.fromRGB(90,90,90)})
+                new("UICorner",{Parent=big, CornerRadius = UDim.new(0,6)})
+                local bigTxt = new("TextLabel", {Parent = big, Text = "Segera Hadir", Font = Enum.Font.GothamBlack, TextSize = 48, Size = UDim2.new(1, -20, 1, -20), Position = UDim2.new(0,10,0,10), BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(255,255,255), TextXAlignment = Enum.TextXAlignment.Center, TextYAlignment = Enum.TextYAlignment.Center})
+                delay(1.6, function()
+                    if big and big.Parent then
+                        big:Destroy()
+                    end
+                end)
+            end
+        end)
+    end
 end
+
+-- make Content cells visually separated by vertical lines
+local sepVert = new("Frame", {Parent = window, Size = UDim2.new(0,2,1, -64), Position = UDim2.new(0.35,0,0,64), BackgroundColor3 = Color3.fromRGB(255,255,255)})
+sepVert.BorderSizePixel = 0
+
+-- optional main picture (big behind content)
+if USE_MAIN_PIC then
+    local bigImage = new("ImageLabel", {Parent = content, Size = UDim2.new(0.5,0,1, -64), Position = UDim2.new(0.05,0,0,64), Image = "rbxassetid://"..MAIN_PIC_ID, BackgroundTransparency = 0.2, ScaleType = Enum.ScaleType.Crop})
+    new("UICorner", {Parent = bigImage, CornerRadius = UDim.new(0,6)})
+end
+
+-- final: place window at good starting position (centered horizontally, 40% from top)
+window.Position = UDim2.new(0.5, -window.Size.X.Offset/2, 0.4, 0)
