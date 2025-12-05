@@ -2,8 +2,8 @@
 -- LocalScript: membuat UI 'BaraLeaks' style, draggable, minimize, toggle rows.
 -- GANTI owner avatar id di bawah dengan decal asset id yang lo upload di Roblox (angka tanpa "rbxassetid://")
 -- Gambar model link tanpa id
-local OWNER_AVATAR_URL = "https://imgur.com/a/UZFeGzt"
-local MAIN_PIC_URL = "https://imgur.com/a/UZFeGzt"
+local OWNER_AVATAR_URL = "https://imgur.com/a/oaWMMf7.png"
+local MAIN_PIC_URL = "https://imgur.com/a/oaWMMf7.png"
 local USE_MAIN_PIC = false
 
 local Players = game:GetService("Players")
@@ -65,7 +65,7 @@ local title = new("TextLabel", {
 local avatarWrap = new("Frame", {Parent = topBar, Name="AvatarWrap", Size = UDim2.new(0,64,0,64), Position = UDim2.new(0,8,0,0), BackgroundTransparency = 1})
 local avatar = new("ImageLabel", {
     Parent = avatarWrap, Name = "Avatar", Size = UDim2.new(1,0,1,0),
-    BackgroundColor3 = Color3.fromRGB(65,65,65), BorderSizePixel = 0, Image = "rbxassetid://"..OWNER_AVATAR_ID,
+    BackgroundColor3 = Color3.fromRGB(65,65,65), BorderSizePixel = 0, Image = OWNER_AVATAR_URL,
     ScaleType = Enum.ScaleType.Crop
 })
 new("UICorner",{Parent = avatar, CornerRadius = UDim.new(0,10)})
@@ -207,7 +207,7 @@ contentCells[infoIndex].frame.InputBegan:Connect(function(inp)
             popup.Size = UDim2.new(0, 420, 0, 240)
             popup.Position = UDim2.new(0.5, -210, 0.5, -120)
             popupImg.Size = UDim2.new(0,80,0,80)
-            popupImg.Image = "rbxassetid://"..OWNER_AVATAR_ID
+            popupImg.Image = OWNER_AVATAR_URL
         else
             popup.Visible = false
             popup.Size = UDim2.new(0,0,0,0)
