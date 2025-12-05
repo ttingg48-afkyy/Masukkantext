@@ -20,6 +20,17 @@ end
 
 local screenGui = new("ScreenGui", {Parent = PlayerGui, Name = "BaraLeaksUI", ResetOnSpawn = false})
 
+window.ZIndex = 50
+body.ZIndex = 49
+topBar.ZIndex = 51
+popup.ZIndex = 100
+
+avatar.ImageRectOffset = Vector2.new(0,0)
+avatar.ImageRectSize = Vector2.new(0,0)
+
+popupImg.ImageRectOffset = Vector2.new(0,0)
+popupImg.ImageRectSize = Vector2.new(0,0)
+
 local window = new("Frame", {
     Parent = screenGui,
     Name = "Window",
@@ -48,6 +59,10 @@ local avatar = new("ImageLabel", {
     ScaleType = Enum.ScaleType.Crop
 })
 new("UICorner",{Parent = avatar, CornerRadius = UDim.new(0,12)})
+
+topBar.Active = true
+topBar.Selectable = true
+topBar.ZIndex = 51
 
 local title = new("TextLabel", {
     Parent = topBar,
@@ -99,6 +114,9 @@ local leftWidth = 0.33
 local rowsFrames = {}
 local contentCells = {}
 
+left.ClipsDescendants = true
+right.ClipsDescendants = true
+
 for i=1,6 do
     local y = (i-1)*(1/6)
 
@@ -122,7 +140,12 @@ for i=1,6 do
         TextSize = 26,
         TextXAlignment = Enum.TextXAlignment.Left
     })
-
+    window.ClipsDescendants = true
+    window.Active = true
+    window.Selectable = true
+    window.ZIndex = 50
+    body.ClipsDescendants = true
+    body.ZIndex = 49
     -- right cell
     local right = new("Frame", {
         Parent = body,
@@ -169,6 +192,14 @@ local popup = new("Frame", {
 })
 new("UICorner",{Parent=popup,CornerRadius=UDim.new(0,8)})
 
+popup.ZIndex = 100
+popup.ClipsDescendants = true
+avatar.ImageRectOffset = Vector2.new(0,0)
+avatar.ImageRectSize = Vector2.new(0,0)
+
+popupImg.ImageRectOffset = Vector2.new(0,0)
+popupImg.ImageRectSize = Vector2.new(0,0)
+
 local popupImg = new("ImageLabel", {
     Parent = popup,
     Size = UDim2.new(0,80,0,80),
@@ -204,6 +235,13 @@ topBar.InputBegan:Connect(function(i)
         startPos = window.Position
     end
 end)
+
+window.ClipsDescendants = true
+right.ClipsDescendants = true
+left.ClipsDescendants = true
+body.ClipsDescendants = true
+window.Active = true
+window.Selectable = true
 
 UIS.InputChanged:Connect(function(i)
     if dragging and i.UserInputType == Enum.UserInputType.MouseMovement then
